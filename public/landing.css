@@ -1,20 +1,18 @@
-/* landing.css */
 :root {
-    --primary-bg: #1a1a1a; /* Very dark grey, almost black */
-    --secondary-bg: #2b2b2b; /* Dark grey */
-    --tertiary-bg: #101010; /* Even darker grey for navbar */
-    --text-color: #c5c5c5; /* Light grey for text */
-    --accent-color: #9c1a1a; /* Deep, blood red */
-    --accent-hover: #7a0e0e; /* Darker red for hover */
-    --highlight-color: #ff4d4d; /* Brighter red for emphasis */
+    --primary-bg: #1a1a1a; 
+    --secondary-bg: #2b2b2b; 
+    --tertiary-bg: #101010; 
+    --text-color: #c5c5c5; 
+    --accent-color: #9c1a1a;
+    --accent-hover: #7a0e0e; 
+    --highlight-color: #ff4d4d; 
     --font-creepy: 'Creepster', cursive;
     --font-narrative: 'Special Elite', cursive;
-    --font-body: 'Merriweather', serif; /* More readable serif for body */
+    --font-body: 'Merriweather', serif;
 
-    --vignette-intensity: .7; /* 0 to 1 */
+    --vignette-intensity: .7; 
 }
 
-/* Subtle flicker animation */
 @keyframes flicker-kf {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.7; }
@@ -37,21 +35,21 @@ body {
     margin: 0;
     padding: 0;
     line-height: 1.7;
-    overflow-x: hidden; /* Prevent horizontal scroll */
+    overflow-x: hidden; 
     background-image: url('https://www.transparenttextures.com/patterns/black-felt.png'),
                       radial-gradient(ellipse at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.8) 100%);
     background-attachment: fixed;
-    opacity: 0; /* For entry animation */
+    opacity: 0; 
     transition: opacity 1s ease-in-out;
 }
 
-body.landing-page-body { /* Targeting the landing page body specifically */
+body.landing-page-body { 
     font-family: var(--font-body);
     background-color: var(--primary-bg);
     color: var(--text-color);
     margin: 0;
-    /* Add padding-top to account for fixed navbar height */
-    padding-top: 70px; /* Adjust if your navbar height is different */
+   
+    padding-top: 70px; 
     line-height: 1.7;
     overflow-x: hidden;
     background-image: url('https://www.transparenttextures.com/patterns/black-felt.png'),
@@ -65,7 +63,7 @@ body.loaded {
     opacity: 1;
 }
 
-/* Pseudo-element for vignette effect */
+
 body::before {
     content: "";
     position: fixed;
@@ -74,14 +72,14 @@ body::before {
     width: 100%;
     height: 100%;
     box-shadow: inset 0 0 150px rgba(0,0,0, var(--vignette-intensity));
-    pointer-events: none; /* Allows interaction with elements behind it */
+    pointer-events: none; 
     z-index: 9999;
 }
 
-/* --- CORRECTED NAVIGATION BAR STYLES --- */
+
 .eerie-navbar {
     background-color: var(--tertiary-bg);
-    padding: 10px 0; /* Vertical padding only. Horizontal padding handled by .nav-container */
+    padding: 10px 0;
     position: fixed;
     top: 0;
     left: 0;
@@ -89,7 +87,7 @@ body::before {
     z-index: 1000;
     box-shadow: 0 2px 10px rgba(0,0,0,0.5);
     border-bottom: 1px solid var(--border-color);
-    box-sizing: border-box; /* Good practice */
+    box-sizing: border-box; 
 }
 
 .nav-container {
@@ -98,9 +96,9 @@ body::before {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 20px; /* Horizontal padding for content inside navbar */
-    width: 100%;      /* Make container use available width */
-    box-sizing: border-box; /* Include padding in width calculation */
+    padding: 0 20px; 
+    width: 100%;  
+    box-sizing: border-box; 
 }
 
 .nav-logo-link {
@@ -110,7 +108,7 @@ body::before {
     text-decoration: none;
     display: flex;
     align-items: center;
-    flex-shrink: 0; /* Prevent logo from shrinking excessively */
+    flex-shrink: 0; 
 }
 
 .nav-logo {
@@ -124,7 +122,7 @@ body::before {
     color: var(--accent-color);
 }
 
-.nav-menu { /* Desktop menu UL */
+.nav-menu { 
     list-style: none;
     display: flex;
     margin: 0;
@@ -132,9 +130,9 @@ body::before {
 }
 
 .nav-menu li {
-    margin-left: 15px; /* Default margin */
+    margin-left: 15px; 
 }
-@media (min-width: 850px) { /* More space for items on wider screens */
+@media (min-width: 850px) { 
     .nav-menu li {
         margin-left: 20px;
     }
@@ -146,7 +144,7 @@ body::before {
     text-decoration: none;
     font-family: var(--font-narrative);
     font-size: 1rem;
-    padding: 8px 10px; /* Adjusted padding for links */
+    padding: 8px 10px; 
     border-radius: 3px;
     transition: color 0.3s ease, background-color 0.3s ease, text-shadow 0.3s ease;
     display: inline-block;
@@ -169,25 +167,25 @@ body::before {
     background-color: var(--accent-color);
 }
 
-.nav-toggle { /* Hamburger button */
-    display: none; /* Hidden on desktop */
+.nav-toggle { 
+    display: none; 
     background: none;
     border: none;
     color: var(--text-color);
-    font-size: 1.8rem; /* Good tap size */
+    font-size: 1.8rem; 
     cursor: pointer;
-    padding: 5px;      /* Adds to tap area & visual spacing */
-    margin-left: 10px; /* Space from potential (hidden) menu items */
-    line-height: 1;    /* Prevents extra height from font */
+    padding: 5px;      
+    margin-left: 10px; 
+    line-height: 1;    
 }
-/* --- END NAVIGATION BAR STYLES --- */
+
 
 
 .page-blood-stain {
     position: fixed;
-    width: 200px; /* Adjust size as needed */
+    width: 200px; 
     height: 200px;
-    background-image: url('https://www.pngplay.com/wp-content/uploads/13/Blood-Splatter-PNG-HD-Quality.png'); /* Use a transparent blood splatter PNG */
+    background-image: url('https://www.pngplay.com/wp-content/uploads/13/Blood-Splatter-PNG-HD-Quality.png');
     background-size: contain;
     background-repeat: no-repeat;
     opacity: 0.3;
@@ -212,7 +210,7 @@ body::before {
 .landing-container {
     max-width: 900px;
     margin: 0 auto;
-    padding: 20px; /* Main content padding */
+    padding: 20px; 
     position: relative;
     z-index: 1;
     animation: fadeIn 1.5s ease-out 0.5s forwards;
@@ -221,9 +219,9 @@ body::before {
 
 .landing-header {
     text-align: center;
-    /* margin-bottom is fine, padding-top might not be needed if body has padding */
+   
     margin-bottom: 60px;
-    padding-top: 20px; /* Adjusted padding since body now has padding-top */
+    padding-top: 20px; 
     border-bottom: 1px solid rgba(255,255,255,0.1);
     padding-bottom: 40px;
     position: relative;
@@ -242,7 +240,7 @@ body::before {
 }
 
 #logo {
-    width: 100px; /* Adjust as needed */
+    width: 100px; 
     height: auto;
     margin-bottom: 10px;
     filter: drop-shadow(0 0 8px var(--accent-color));
@@ -264,13 +262,13 @@ body::before {
 
 .ph-highlight {
     color: var(--accent-color);
-    font-family: var(--font-creepy); /* Ensure PH also uses creepy font if desired */
+    font-family: var(--font-creepy); 
 }
 
 .tagline {
     font-family: var(--font-narrative);
     font-size: 1.3rem;
-    color: #a0a0a0; /* Slightly dimmer text */
+    color: #a0a0a0; 
     margin: 0;
     transition: opacity 0.1s ease-in-out;
 }
@@ -280,7 +278,6 @@ body::before {
     text-shadow: 0 0 5px var(--highlight-color);
 }
 
-/* Intro Section Styling */
 .intro-section {
     display: flex;
     gap: 30px;
@@ -316,12 +313,11 @@ body::before {
     filter: sepia(0.1) contrast(1.2) brightness(1);
 }
 
-/* General Section Styling */
 section {
     margin-bottom: 60px;
     padding: 30px 20px;
-    background-color: rgba(0,0,0,0.15); /* Slightly darker than secondary for depth */
-    border: 1px dashed var(--secondary-bg); /* Dashed border for an "old document" feel */
+    background-color: rgba(0,0,0,0.15); 
+    border: 1px dashed var(--secondary-bg); 
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
@@ -342,12 +338,11 @@ section p {
 }
 
 section strong {
-    color: var(--accent-color); /* Brighter for emphasis */
-    font-weight: normal; /* Special Elite is already boldish */
+    color: var(--accent-color); 
+    font-weight: normal;
     font-family: var(--font-narrative);
 }
 
-/* Features Section */
 .features-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -359,7 +354,7 @@ section strong {
     background-image: url('https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTAyL3JtNjE5LTA4LWEtYmFja2dyb3VuZC1zaS0wMDJiLWNfMS5qcGc.jpg');
     padding: 25px;
     text-align: center;
-    border-radius: 3px; /* Sharper edges */
+    border-radius: 3px;
     border: 1px solid var(--secondary-bg);
     box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -383,7 +378,6 @@ section strong {
     margin-bottom: 10px;
 }
 
-/* Section Divider */
 .section-divider {
     text-align: center;
     margin: 40px 0;
@@ -402,12 +396,11 @@ section strong {
     opacity: 0.7;
 }
 .alt-divider span {
-    font-family: serif; /* For more standard dots */
+    font-family: serif; 
     vertical-align: middle;
 }
 
 
-/* CTA Section */
 .cta-section {
     background-color: rgba(0,0,0,0.3);
     padding: 50px 20px;
@@ -444,7 +437,7 @@ section strong {
     background-color: var(--accent-hover);
     transform: scale(1.05);
     box-shadow: 0 8px 15px rgba(0,0,0,0.4), 0 0 20px var(--highlight-color), inset 0 -3px 5px rgba(0,0,0,0.3);
-    color: #fff; /* Ensure text color stays white on hover */
+    color: #fff; 
 }
 
 .cta-button i {
@@ -462,7 +455,6 @@ section strong {
     margin-top: 25px;
 }
 
-/* Footer */
 .landing-footer {
     text-align: center;
     padding: 40px 20px;
@@ -480,7 +472,7 @@ section strong {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url('https://www.transparenttextures.com/patterns/worn-dots.png'); /* Subtle scratch texture */
+    background-image: url('https://www.transparenttextures.com/patterns/worn-dots.png'); 
     opacity: 0.05;
     pointer-events: none;
 }
@@ -502,48 +494,47 @@ section strong {
 @media (max-width: 768px) {
 
     body.landing-page-body {
-        padding-top: 60px; /* Match navbar height */
+        padding-top: 60px; 
     }
 
     .nav-container {
-        padding: 0 15px; /* Reduce horizontal padding for nav content on smaller screens */
+        padding: 0 15px; 
     }
 
-    .nav-menu { /* This is the UL, now for mobile dropdown */
+    .nav-menu { 
         display: none;
         flex-direction: column;
         width: 100%;
         position: absolute;
-        top: 100%; /* Aligns dropdown right below the navbar */
+        top: 100%; 
         left: 0;
         background-color: var(--tertiary-bg);
         border-top: 1px solid var(--border-color);
-        box-shadow: 0 5px 10px rgba(0,0,0,0.3); /* Add shadow for depth */
-        padding-bottom: 10px; /* Space at the bottom of the open menu */
+        box-shadow: 0 5px 10px rgba(0,0,0,0.3); 
+        padding-bottom: 10px; 
     }
-    .nav-menu.active { /* When JS toggles this class */
+    .nav-menu.active { 
         display: flex;
     }
     .nav-menu li {
         margin: 0;
         text-align: center;
-        width: 100%; /* Make list items take full width */
+        width: 100%; 
     }
     .nav-menu a {
-        display: block; /* Make links full width for easier tapping */
+        display: block; 
         padding: 15px;
         border-bottom: 1px solid var(--secondary-bg);
-        font-size: 1.1rem; /* Slightly larger for mobile readability */
+        font-size: 1.1rem; 
     }
     .nav-menu li:last-child a {
         border-bottom: none;
     }
 
     .nav-toggle {
-        display: block; /* Show hamburger icon */
+        display: block; 
     }
 
-    /* Other landing page content adjustments */
     .landing-header h1 {
         font-size: 3rem;
     }
@@ -557,10 +548,10 @@ section strong {
         flex-direction: column;
     }
     .intro-text p {
-        font-size: 1rem; /* Slightly smaller for mobile if needed */
+        font-size: 1rem; 
     }
     .creepy-map-image {
-        max-width: 200px; /* Further reduce if too large */
+        max-width: 200px; 
         margin-top: 20px;
     }
     .features-grid {
@@ -580,7 +571,7 @@ section strong {
 
 @media (max-width: 480px) {
     body.landing-page-body {
-        padding-top: 55px; /* If navbar becomes slightly shorter */
+        padding-top: 55px; 
     }
     .nav-container {
         padding: 0 10px;
@@ -589,15 +580,15 @@ section strong {
         font-size: 1.5rem;
     }
     .nav-logo {
-        height: 35px; /* Slightly smaller logo */
+        height: 35px; 
     }
     .nav-toggle {
-        font-size: 1.6rem; /* Adjust icon size if needed */
-        padding: 4px; /* Adjust padding */
+        font-size: 1.6rem;
+        padding: 4px; 
     }
 
     .landing-header h1 {
-        font-size: 2.2rem; /* Further reduce for very small screens */
+        font-size: 2.2rem; 
         margin: 0 0 5px;
     }
     .landing-header {
@@ -611,20 +602,20 @@ section strong {
         font-size: 1.9rem;
     }
     .intro-section {
-        padding: 15px; /* Reduce section padding */
+        padding: 15px; 
     }
     .intro-text p {
         font-size: 0.95rem;
     }
     .page-blood-stain {
-        width: 120px; /* Smaller bloodstains */
+        width: 120px; 
         height: 120px;
     }
     .top-left { top: 50px; left: -20px; }
     .bottom-right { bottom: -30px; right: -30px; }
 
     .features-section, .cta-section {
-        padding: 20px 15px; /* Reduce section padding */
+        padding: 20px 15px; 
     }
     .feature-item {
         padding: 20px;
@@ -633,6 +624,5 @@ section strong {
         font-size: 1.3rem;
         padding: 10px 20px;
     }
-    /* Remove the specific #logo style if it exists from the original, as .nav-logo handles it */
-    /* #logo { width: 80px; } */
+   
 }
