@@ -146,6 +146,28 @@
         </div>
     </div>
 
+      <div id="chat-widget" class="chat-widget-hidden">
+        <div id="chat-header">
+            Eerie Grid Archive Keeper
+            <button id="chat-close-button">×</button>
+        </div>
+        <div id="chat-messages">
+            <div class="chat-message ai-message">
+                <p>The archives are open. What knowledge do you seek from the shadows?</p>
+            </div>
+        </div>
+        <div id="chat-input-container">
+            <input type="text" id="chat-input" placeholder="Ask about a story or place...">
+            <button id="chat-send-button">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <button id="chat-toggle-button">
+        <i class="fas fa-book-skull"></i>
+    </button>
+
     <footer class="map-page-footer">
         <p>© <span id="currentYearMap"></span> Eerie Grid PH. The map remembers.</p>
     </footer>
@@ -162,6 +184,7 @@
 
     <script src="stories.js"></script> 
     <script src="client.js"></script>
+     <script src="chatbot.js"></script>
 
     <script>
       

@@ -881,4 +881,6 @@ const dummyStories = [
     }
 ]
 
- /* asdda asdads */
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { dummyStories };
+}
