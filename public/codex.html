@@ -15,6 +15,7 @@
     
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="codex.css">
+    <link rel="stylesheet" href="chatbot.css">   
 </head>
 <body class="codex-page-body">
 
@@ -30,7 +31,7 @@
             <ul class="nav-menu">
                 <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
                 <li><a href="map.html"><i class="fas fa-map-marked-alt"></i> The Grid</a></li>
-                <!-- <li><a href="#future-archives"><i class="fas fa-archive"></i> The Archives</a></li>  -->
+                 <li><a href="archive.html"><i class="fas fa-archive"></i> The Archive</a></li>
                 <li><a href="codex.html" class="active"><i class="fas fa-book-skull"></i> Creature Codex</a></li> 
                   <li><a href="lore.html" ><i class="fas fa-book-tanakh"></i> Lore & Legends</a></li> 
             </ul>
@@ -79,10 +80,31 @@
             </div>
         </div>
     </div>
+<div id="chat-widget" class="chat-widget-hidden">
+        <div id="chat-header">
+            Archive Keeper
+            <button id="chat-close-button">×</button>
+        </div>
+        <div id="chat-messages">
+            <div class="chat-message ai-message">
+                <p>The archives are open. What knowledge do you seek from the shadows?</p>
+            </div>
+        </div>
+        <div id="chat-input-container">
+            <input type="text" id="chat-input" placeholder="Ask about a story or place...">
+            <button id="chat-send-button">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
 
+    <button id="chat-toggle-button">
+        <i class="fas fa-book-skull"></i>
+    </button>
     <footer class="map-page-footer">
         <p>© <span id="currentYearMap"></span> Eerie Grid PH. The archive is eternal.</p>
     </footer>
+     <script src="chatbot.js"></script>
 
     <script>
         const creatures = [

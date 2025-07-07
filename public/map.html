@@ -19,6 +19,8 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet-geosearch@3.11.0/dist/geosearch.css" />
 
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="chatbot.css">
+    
 </head>
 <body class="map-page-body">
 
@@ -34,11 +36,9 @@
             <ul class="nav-menu">
                 <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
                 <li><a href="map.html" class="active"><i class="fas fa-map-marked-alt"></i> The Grid</a></li>
-                <!-- <li><a href="#future-archives"><i class="fas fa-archive"></i> The Archives</a></li>  -->
+                <li><a href="archive.html"><i class="fas fa-archive"></i> The Archive</a></li>
                 <li><a href="codex.html"><i class="fas fa-book-skull"></i> Creature Codex</a></li>  
-                 <li><a href="lore.html"><i class="fas fa-book-tanakh"></i> Lore & Legends</a></li> 
-
-                </i>
+                <li><a href="lore.html"><i class="fas fa-book-tanakh"></i> Lore & Legends</a></li> 
             </ul>
         </div>
     </nav>
@@ -55,10 +55,8 @@
         <div class="main-content-area">
             <div id="map-column">
                 <div id="map">
-                 
                     <div class="map-loading-overlay">
                         <p>Summoning the spirits of the map...</p>
-                      
                         <i class="fas fa-spinner fa-spin"></i>
                     </div>
                 </div>
@@ -107,28 +105,15 @@
         <div class="section-divider-map">
             <i class="fas fa-skull-crossbones"></i>
         </div>
-
-      
     </div>
-      <div id="story-list-panel">
-            <h3><i class="fas fa-book-open"></i> Echoes from the Grid</h3>
-            <div class="search-wrapper">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" id="story-search-bar" placeholder="Search the shadows for a story...">
-            </div>
-            <div id="stories-container">
-                <p class="loading-stories-text">Conjuring tales from the ether...</p>
-            </div>
-        </div>
-
-     <div id="story-modal" class="modal modal-hidden">
+    
+    <div id="story-modal" class="modal modal-hidden">
         <div class="modal-outer-frame"> 
             <div class="modal-content">
                 <button id="modal-close-button" class="modal-close" aria-label="Close story details">
                     <i class="fas fa-times"></i> 
                 </button>
                 <div class="modal-header-creepy">
-                   
                     <h2 id="modal-story-title">Story Title Here</h2>
                     <p id="modal-story-location"><em><i class="fas fa-map-pin"></i> Location: Location Name Here</em></p>
                 </div>
@@ -146,9 +131,9 @@
         </div>
     </div>
 
-      <div id="chat-widget" class="chat-widget-hidden">
+    <div id="chat-widget" class="chat-widget-hidden">
         <div id="chat-header">
-            Eerie Grid Archive Keeper
+            Archive Keeper
             <button id="chat-close-button">×</button>
         </div>
         <div id="chat-messages">
@@ -172,22 +157,16 @@
         <p>© <span id="currentYearMap"></span> Eerie Grid PH. The map remembers.</p>
     </footer>
 
-   
-
-    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
             crossorigin=""></script>
-
-             <script src="https://unpkg.com/leaflet-geosearch@3.11.0/dist/geosearch.umd.js"></script>
+    <script src="https://unpkg.com/leaflet-geosearch@3.11.0/dist/geosearch.umd.js"></script>
     
-
     <script src="stories.js"></script> 
     <script src="client.js"></script>
-     <script src="chatbot.js"></script>
+    <script src="chatbot.js"></script>
 
     <script>
-      
         document.getElementById('currentYearMap').textContent = new Date().getFullYear();
 
         const navToggle = document.querySelector('.nav-toggle');
@@ -199,7 +178,6 @@
                 navMenu.classList.toggle('active');
             });
         }
-
     </script>
 </body>
 </html>

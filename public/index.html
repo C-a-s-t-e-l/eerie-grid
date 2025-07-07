@@ -16,14 +16,19 @@
     
    
     <link rel="icon" href="https://cdn-icons-png.freepik.com/256/8494/8494367.png" type="image/png">
+    
     <link rel="stylesheet" href="landing.css">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Special+Elite&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.lordicon.com/lordicon.js"></script>
     
+    
    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <link rel="stylesheet" href="chatbot.css" !important>
 </head>
 <body class="landing-page-body"> 
     
@@ -39,7 +44,7 @@
             <ul class="nav-menu">
                 <li><a href="index.html "class="active"><i class="fas fa-home"></i> Home</a></li>
                 <li><a href="map.html"><i class="fas fa-map-marked-alt"></i> The Grid</a></li>
-                <!-- <li><a href="#future-archives"><i class="fas fa-archive"></i> The Archives</a></li>  -->
+                 <li><a href="archive.html"><i class="fas fa-archive"></i> The Archive</a></li>
                 <li><a href="codex.html"><i class="fas fa-book-skull"></i> Creature Codex</a></li> 
                   <li><a href="lore.html"><i class="fas fa-book-tanakh"></i> Lore & Legends</a></li> 
             </ul>
@@ -48,7 +53,27 @@
 
     <div class="page-blood-stain top-left"></div>
     <div class="page-blood-stain bottom-right"></div>
+<div id="chat-widget" class="chat-widget-hidden">
+        <div id="chat-header">
+            Archive Keeper
+            <button id="chat-close-button">×</button>
+        </div>
+        <div id="chat-messages">
+            <div class="chat-message ai-message">
+                <p>The archives are open. What knowledge do you seek from the shadows?</p>
+            </div>
+        </div>
+        <div id="chat-input-container">
+           <textarea id="chat-input" placeholder="Ask about a story or a place..." rows="1"></textarea>
+            <button id="chat-send-button">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
 
+    <button id="chat-toggle-button">
+        <i class="fas fa-book-skull"></i>
+    </button>
     <div class="landing-container">
         <header class="landing-header">
             <h1>Eerie Grid <span class="ph-highlight">PH</span></h1>
@@ -124,6 +149,10 @@
             </div>
         </section>
 
+        
+
+       
+
         <footer class="landing-footer">
             <div class="footer-scratches"></div>
             <p>© <span id="currentYear"></span> Eerie Grid PH. All souls documented. Venture responsibly.</p>
@@ -134,6 +163,7 @@
             </div>
         </footer>
     </div>
+     <script src="chatbot.js"></script>
 
     <script>
     

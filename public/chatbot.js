@@ -6,10 +6,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatInput = document.getElementById('chat-input');
     const chatSendButton = document.getElementById('chat-send-button');
 
-    // --- Toggle Chat Widget Visibility ---
+    let chatHistory = [];
+
     chatToggleButton.addEventListener('click', () => {
         chatWidget.classList.toggle('chat-widget-hidden');
         chatToggleButton.classList.toggle('chat-widget-hidden');
+    });
+
+     chatInput.addEventListener('input', () => {
+        chatInput.style.height = 'auto';
+        chatInput.style.height = `${chatInput.scrollHeight}px`;
     });
 
     chatCloseButton.addEventListener('click', () => {
@@ -17,7 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
         chatToggleButton.classList.remove('chat-widget-hidden');
     });
 
-    // --- Handle Sending Messages ---
     chatSendButton.addEventListener('click', sendMessage);
     chatInput.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
@@ -29,11 +34,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const messageText = chatInput.value.trim();
         if (messageText === '') return;
 
-        // 1. Display user's message
         addMessage(messageText, 'user-message');
         chatInput.value = '';
 
-        // 2. Display typing indicator and prepare AI response bubble
+        chatHistory.push({ role: 'user', text: messageText });
+
         const aiMessageElement = addMessage('', 'ai-message');
         const typingIndicator = document.createElement('span');
         typingIndicator.classList.add('typing-indicator');
@@ -41,25 +46,26 @@ document.addEventListener('DOMContentLoaded', () => {
         aiMessageElement.querySelector('p').appendChild(typingIndicator);
 
         try {
-            // 3. Fetch streaming response from the server
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ message: messageText }),
+                body: JSON.stringify({ 
+                    message: messageText,
+                    history: chatHistory.slice(0, -1) 
+                }),
             });
 
             if (!response.ok) {
                 throw new Error(`Server error: ${response.statusText}`);
             }
 
-            // 4. Process the stream
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let aiResponseText = '';
 
-            aiMessageElement.querySelector('p').removeChild(typingIndicator); // Remove typing indicator
+            aiMessageElement.querySelector('p').removeChild(typingIndicator);
 
             while (true) {
                 const { value, done } = await reader.read();
@@ -68,8 +74,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const chunk = decoder.decode(value, { stream: true });
                 aiResponseText += chunk;
                 aiMessageElement.querySelector('p').textContent = aiResponseText;
-                chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll
+                chatMessages.scrollTop = chatMessages.scrollHeight;
             }
+            chatHistory.push({ role: 'model', text: aiResponseText });
 
         } catch (error) {
             console.error('Error fetching AI response:', error);
@@ -86,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
         messageElement.appendChild(p);
         
         chatMessages.appendChild(messageElement);
-        chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll
+        chatMessages.scrollTop = chatMessages.scrollHeight;
         return messageElement;
     }
 });

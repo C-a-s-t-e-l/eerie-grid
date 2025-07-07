@@ -491,7 +491,7 @@ section strong {
     color: var(--accent-color);
     transform: scale(1.2);
 }
-@media (max-width: 768px) {
+@media (max-width: 1050px) {
 
     body.landing-page-body {
         padding-top: 60px; 
