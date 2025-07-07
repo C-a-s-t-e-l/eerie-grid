@@ -517,6 +517,7 @@ html {
 
 .modal-story-document {
     padding: 20px 25px;
+    min-height: 200px;
 }
 
 .story-text-container {
@@ -524,7 +525,6 @@ html {
     font-size: 0.8rem;
     color: var(--ink-color);
     text-align: justify;
-    min-height: 200px;
 }
 .story-text-container p:first-of-type::first-letter {
     font-family: var(--font-creepy);
