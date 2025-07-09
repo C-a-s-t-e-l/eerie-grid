@@ -156,6 +156,14 @@
     box-sizing: border-box;
     transition: height 0.2s ease;
 
+     /* --- Key properties for resizing --- */
+    resize: none; /* Disables the manual resize handle */
+    overflow-y: auto; 
+    box-sizing: border-box; 
+    
+    min-height: 38px;
+    max-height: 120px; /
+
 
 }
 
