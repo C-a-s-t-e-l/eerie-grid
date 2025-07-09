@@ -495,7 +495,7 @@ html {
     text-shadow: 1px 1px 1px rgba(0,0,0,0.1);
 }
 
-#modal-story-location {
+#modal-story-location, #modal-story-author {
     font-family: var(--font-narrative);
     color: #716558;
     font-size: 1rem;

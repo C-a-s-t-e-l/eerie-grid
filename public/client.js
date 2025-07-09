@@ -23,6 +23,7 @@ const modalTitle = document.getElementById('modal-story-title');
 const modalLocation = document.getElementById('modal-story-location');
 const modalFullStory = document.getElementById('modal-full-story');
 const modalCloseButton = document.getElementById('modal-close-button');
+const modalAuthor = document.getElementById('modal-story-author'); 
 
 
 const notificationModal = document.getElementById('notification-modal');
@@ -38,9 +39,13 @@ function openStoryModal(story) {
         console.error('Modal elements not found!');
         return;
     }
+
+     modalTitle.textContent = story.title || 'Untitled Story';
+    
     
 
     modalLocation.innerHTML = `<em><i class="fas fa-map-pin"></i> ${story.location_name || 'Unknown Location'}</em>`;
+     modalAuthor.innerHTML = `<em><i class="fas fa-user-ghost"></i> By: ${story.nickname || 'Unknown'}</em>`;
     const cleanStoryText = (story.full_story || '').replace(/\\n/g, '\n');
     const paragraphs = cleanStoryText.split('\n').filter(p => p.trim() !== '');
 
