@@ -82,13 +82,20 @@
     </div>
 <div id="chat-widget" class="chat-widget-hidden">
         <div id="chat-header">
-            Archive Keeper
-            <button id="chat-close-button">×</button>
+            <div id="keeper-info">
+                <img src="/images/keeper_icon.png" alt="Archive Keeper Icon">
+                <span>Archive Keeper</span>
+            </div>
+              <div class="chat-header-buttons">
+                <button id="clear-chat-button" class="chat-header-button" title="Start New Conversation"> <img src="https://icon-library.com/images/reset-icon-png/reset-icon-png-23.jpg" alt="">
+             </button>
+            <button id="chat-close-button" title="Close conversation">×</button>
+              </div>
         </div>
         <div id="chat-messages">
-            <div class="chat-message ai-message">
+            <!-- <div class="chat-message ai-message">
                 <p>The archives are open. What knowledge do you seek from the shadows?</p>
-            </div>
+            </div> -->
         </div>
         <div id="chat-input-container">
             <input type="text" id="chat-input" placeholder="Ask about a story or place...">
@@ -98,8 +105,8 @@
         </div>
     </div>
 
-    <button id="chat-toggle-button">
-        <i class="fas fa-book-skull"></i>
+      <button id="chat-toggle-button">
+        <img src="/images/keeper_icon.png" alt="">
     </button>
     <footer class="map-page-footer">
         <p>© <span id="currentYearMap"></span> Eerie Grid PH. The archive is eternal.</p>

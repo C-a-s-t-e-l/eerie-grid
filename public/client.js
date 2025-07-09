@@ -24,28 +24,200 @@ const modalLocation = document.getElementById('modal-story-location');
 const modalFullStory = document.getElementById('modal-full-story');
 const modalCloseButton = document.getElementById('modal-close-button');
 
+
+const notificationModal = document.getElementById('notification-modal');
+const notificationContent = notificationModal ? notificationModal.querySelector('.notification-modal-content') : null;
+const notificationText = document.getElementById('notification-modal-text');
+const notificationIcon = document.getElementById('notification-modal-icon');
+const notificationCloseBtn = document.getElementById('notification-modal-close');
+
+
 function openStoryModal(story) {
+
     if (!storyModal || !modalTitle || !modalLocation || !modalFullStory) {
         console.error('Modal elements not found!');
         return;
     }
-    modalTitle.textContent = story.title || 'Untitled Story';
-    modalLocation.textContent = `Location: ${story.locationName || 'Unknown Location'}`;
+    
+
+    modalLocation.innerHTML = `<em><i class="fas fa-map-pin"></i> ${story.location_name || 'Unknown Location'}</em>`;
+    const cleanStoryText = (story.full_story || '').replace(/\\n/g, '\n');
+    const paragraphs = cleanStoryText.split('\n').filter(p => p.trim() !== '');
 
     modalFullStory.innerHTML = ''; 
-    const fullStoryText = story.fullStory || '';
-    const paragraphs = fullStoryText.split('\n');
-    paragraphs.forEach(paraText => {
-        if (paraText.trim() !== '') {
-            const p = document.createElement('p');
-            p.textContent = paraText;
-            modalFullStory.appendChild(p);
-        }
+
+    paragraphs.forEach(paragraphText => {
+        const p = document.createElement('p');
+        p.textContent = paragraphText;
+        modalFullStory.appendChild(p);
+    });
+
+
+    const commentStoryIdInput = document.getElementById('comment-story-id');
+    if(commentStoryIdInput) {
+        commentStoryIdInput.value = story.id;
+    }
+
+    const commentNicknameInput = document.getElementById('comment-nickname');
+    if(commentNicknameInput){
+        commentNicknameInput.value = localStorage.getItem('eerieGridNickname') || '';
+    }
+
+    fetchAndDisplayComments(story.id);
+
+    setupReactionSystem(story.id);
+
+    const reactionButtons = document.querySelectorAll('.reaction-button');
+    reactionButtons.forEach(button => {
+ 
+        const newButton = button.cloneNode(true);
+        newButton.addEventListener('click', (event) => handleReactionClick(event, story.id));
+        button.parentNode.replaceChild(newButton, button);
     });
 
     storyModal.classList.remove('modal-hidden');
     storyModal.classList.add('modal-visible');
 }
+
+function showNotificationModal(message, type = 'error') { 
+    if (!notificationModal) return;
+
+    notificationText.textContent = message;
+
+    notificationContent.classList.remove('notification-success', 'notification-error');
+    notificationIcon.innerHTML = ''; 
+
+    if (type === 'success') {
+        notificationContent.classList.add('notification-success');
+        notificationIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+    } else { 
+        notificationContent.classList.add('notification-error');
+        notificationIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+    }
+
+    notificationModal.classList.add('modal-visible');
+}
+
+function hideNotificationModal() {
+    if (notificationModal) {
+        notificationModal.classList.remove('modal-visible');
+    }
+}
+
+if (notificationModal && notificationCloseBtn) {
+    notificationCloseBtn.addEventListener('click', hideNotificationModal);
+    notificationModal.addEventListener('click', (event) => {
+
+        if (event.target === notificationModal) {
+            hideNotificationModal();
+        }
+    });
+}
+
+function getOrCreateUserId() {
+    let userId = localStorage.getItem('eerieGridUserId');
+    if (!userId) {
+        userId = self.crypto.randomUUID();
+        localStorage.setItem('eerieGridUserId', userId);
+    }
+    return userId;
+}
+
+function displayReactionCounts(counts) {
+    const displayContainer = document.getElementById('reaction-display');
+    if (!displayContainer) return;
+
+    const emojiMap = {
+        spooked: '😱',
+        intriguing: '🤔',
+        tragic: '😥',
+        believable: '🧐',
+        absurd: '😂'
+    };
+
+    if (!counts || counts.length === 0) {
+        displayContainer.innerHTML = '';
+        return;
+    }
+
+    displayContainer.innerHTML = counts.map(item =>
+        `<span class="reaction-count">${emojiMap[item.reaction_type] || '?'} ${item.reaction_count}</span>`
+    ).join('');
+}
+
+function updateReactionButtons(userReaction) {
+    const buttons = document.querySelectorAll('.reaction-button');
+    buttons.forEach(button => {
+        if (button.dataset.reaction === userReaction) {
+            button.classList.add('selected');
+        } else {
+            button.classList.remove('selected');
+        }
+    });
+}
+
+async function setupReactionSystem(storyId) {
+    const userId = getOrCreateUserId();
+    
+    try {
+        const [countsResult, userReactionResult] = await Promise.all([
+            supabaseClient.rpc('get_reaction_counts', { story_id_to_check: storyId }),
+            supabaseClient.from('reactions').select('reaction_type').eq('story_id', storyId).eq('user_id', userId).maybeSingle()
+        ]);
+
+        if (countsResult.error) throw countsResult.error;
+        if (userReactionResult.error) throw userReactionResult.error;
+
+        displayReactionCounts(countsResult.data);
+        
+        const userReaction = userReactionResult.data ? userReactionResult.data.reaction_type : null;
+        updateReactionButtons(userReaction);
+
+    } catch (err) {
+        console.error("Error setting up reactions:", err.message);
+        const displayContainer = document.getElementById('reaction-display');
+        if (displayContainer) displayContainer.innerHTML = '<span class="reaction-count">?</span>';
+    }
+}
+
+async function handleReactionClick(event, storyId) {
+    const button = event.currentTarget;
+    const reactionType = button.dataset.reaction;
+    const userId = getOrCreateUserId();
+
+    const isAlreadySelected = button.classList.contains('selected');
+
+    if (isAlreadySelected) {
+        try {
+            const { error } = await supabaseClient
+                .from('reactions')
+                .delete()
+                .eq('story_id', storyId)
+                .eq('user_id', userId);
+            
+            if (error) throw error;
+            await setupReactionSystem(storyId);
+        } catch (err) {
+            console.error("Error deleting reaction:", err.message);
+        }
+    } else {
+        try {
+            const { error } = await supabaseClient
+                .from('reactions')
+                .upsert({
+                    story_id: storyId,
+                    user_id: userId,
+                    reaction_type: reactionType
+                }, { onConflict: 'story_id, user_id' }); 
+
+            if (error) throw error;
+            await setupReactionSystem(storyId);
+        } catch (err) {
+            console.error("Error upserting reaction:", err.message);
+        }
+    }
+}
+
 
 function closeStoryModal() {
     if (!storyModal) return;
@@ -157,15 +329,16 @@ function displayMarkers(storiesToDisplay) {
     }
     storyMarkers = {}; 
 
-    storiesToDisplay.forEach(story => {
-        if (story.lat && story.lng) {
-            const marker = L.marker([story.lat, story.lng], { icon: creepyIcon }).addTo(map);
-            storyMarkers[story.id] = marker; 
-            marker.on('click', () => {
-                openStoryModal(story);
-            });
-        }
-    });
+   storiesToDisplay.forEach(story => {
+    // Change to latitude and longitude
+    if (story.latitude && story.longitude) {
+        const marker = L.marker([story.latitude, story.longitude], { icon: creepyIcon }).addTo(map);
+        storyMarkers[story.id] = marker; 
+        marker.on('click', () => {
+            openStoryModal(story);
+        });
+    }
+});
 }
 
 function updateMapFocus() { 
@@ -175,10 +348,10 @@ function updateMapFocus() {
     if (philippinesFocus) {
         if (map && philippinesMapBounds) map.setMaxBounds(philippinesMapBounds);
         if (toggleButton) toggleButton.textContent = 'Open up the Horrors of the World';
-        const phStories = allStories.filter(story =>
-            story.lat >= PH_BOUNDS_COORDS.minLat && story.lat <= PH_BOUNDS_COORDS.maxLat &&
-            story.lng >= PH_BOUNDS_COORDS.minLng && story.lng <= PH_BOUNDS_COORDS.maxLng
-        );
+       const phStories = allStories.filter(story =>
+    story.latitude >= PH_BOUNDS_COORDS.minLat && story.latitude <= PH_BOUNDS_COORDS.maxLat &&
+    story.longitude >= PH_BOUNDS_COORDS.minLng && story.longitude <= PH_BOUNDS_COORDS.maxLng
+);
         displayMarkers(phStories); 
     } else { 
         if (map) map.setMaxBounds(null);
@@ -187,58 +360,160 @@ function updateMapFocus() {
     }
 }
 
-function handleStorySubmit(event) {
+async function handleStorySubmit(event) {
     event.preventDefault();
-    const title = document.getElementById('title').value;
-    const storyText = document.getElementById('fullStory').value;
-    const latStr = document.getElementById('latitude').value;
-    const lngStr = document.getElementById('longitude').value;
-    const locationName = document.getElementById('locationName').value;
+    const submitButton = document.querySelector('#storyForm button[type="submit"]');
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
 
-    if (!title || !storyText || !latStr || !lngStr || !locationName) {
-        alert('Please fill in all fields and select a location on the map.');
-        return;
-    }
-    const latNum = parseFloat(latStr);
-    const lngNum = parseFloat(lngStr);
-
-    if (philippinesFocus) {
-        if (latNum < PH_BOUNDS_COORDS.minLat || latNum > PH_BOUNDS_COORDS.maxLat ||
-            lngNum < PH_BOUNDS_COORDS.minLng || lngNum > PH_BOUNDS_COORDS.maxLng) {
-            alert("Story location outside PH. To post, 'View World Map' or select location in PH.");
-            return;
-        }
-    }
-
-    const newStory = {
-        id: 'story-' + Date.now(),
-        title: title, fullStory: storyText, locationName: locationName,
-        lat: latNum, lng: lngNum,
-        snippet: storyText.substring(0, 100) + (storyText.length > 100 ? '...' : '')
+    const storyData = {
+        title: document.getElementById('title').value,
+        full_story: document.getElementById('fullStory').value, 
+        nickname: document.getElementById('nickname').value,
+        email: document.getElementById('email').value,
+        latitude: parseFloat(document.getElementById('latitude').value),
+        longitude: parseFloat(document.getElementById('longitude').value),
+        location_name: document.getElementById('locationName').value, 
     };
 
-    allStories.push(newStory);
-    updateMapFocus();
-
-    document.getElementById('storyForm').reset();
-    if (currentMarker) {
-        currentMarker.remove();
-        currentMarker = null; 
+    if (!storyData.title || !storyData.full_story || !storyData.nickname || !storyData.latitude || !storyData.longitude || !storyData.location_name) {
+        showNotificationModal('Please fill in all fields and select a location on the map by clicking on an area.');
+        submitButton.disabled = false;
+        submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Add to the Grim Record';
+        return;
     }
-    alert('Story posted locally!');
+
+    localStorage.setItem('eerieGridNickname', storyData.nickname);
+
+    try {
+        const response = await fetch('/api/stories', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+         
+            body: JSON.stringify({
+                title: storyData.title,
+                fullStory: storyData.full_story, 
+                nickname: storyData.nickname,
+                email: storyData.email,
+                latitude: storyData.latitude,
+                longitude: storyData.longitude,
+                locationName: storyData.location_name, 
+            }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.msg || 'An error occurred.');
+        }
+
+        showNotificationModal('Your whisper has crossed the veil. It now echoes in the space between worlds, awaiting judgment.');
+        document.getElementById('storyForm').reset();
+        document.getElementById('nickname').value = localStorage.getItem('eerieGridNickname') || '';
+        if (currentMarker) {
+            currentMarker.remove();
+            currentMarker = null;
+        }
+
+    } catch (error) {
+        console.error('Submission failed:', error);
+        showNotificationModal(`Submission failed: ${error.message}`);
+    } finally {
+        submitButton.disabled = false;
+        submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Add to the Grim Record';
+    }
+}
+
+async function fetchAndDisplayComments(storyId) {
+    const commentsContainer = document.getElementById('comments-container');
+    if (!commentsContainer) return;
+
+    commentsContainer.innerHTML = '<p>Loading echoes...</p>';
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('comments')
+            .select('*')
+            .eq('story_id', storyId)
+            .order('created_at', { ascending: true });
+
+        if (error) throw error;
+
+        if (data.length === 0) {
+            commentsContainer.innerHTML = '<p>No echoes yet. Be the first to leave a whisper.</p>';
+        } else {
+            commentsContainer.innerHTML = data.map(comment => {
+                const commentDate = new Date(comment.created_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+                return `
+                    <div class="comment-card">
+                        <p class="comment-text">${escapeHTML(comment.comment_text)}</p>
+                        <p class="comment-meta">By <span class="comment-author">${escapeHTML(comment.nickname)}</span> on <span class="comment-date">${commentDate}</span></p>
+                    </div>
+                `;
+            }).join('');
+        }
+    } catch (err) {
+        commentsContainer.innerHTML = '<p>Could not load the echoes from the beyond.</p>';
+        console.error('Error fetching comments:', err.message);
+    }
+}
+
+function escapeHTML(str) {
+    return str.replace(/[&<>"']/g, function (match) {
+        return {
+            '&': '&',
+            '<': '<',
+            '>': '>',
+            '"': '"',
+            "'": "'"
+        }[match];
+    });
 }
 
 function checkUrlForStory() {
     const params = new URLSearchParams(window.location.search);
     const storyId = params.get('story');
+    const noModalFlag = params.get('no_modal'); 
     if (storyId) {
-        const storyToView = allStories.find(s => s.id === storyId);
-        if (storyToView && storyToView.lat && storyToView.lng) {
-            map.setView([storyToView.lat, storyToView.lng], 15);
-            openStoryModal(storyToView);
+        const storyToView = allStories.find(s => s.id == storyId);
+        if (storyToView && storyToView.latitude && storyToView.longitude) {
+            
+            map.setView([storyToView.latitude, storyToView.longitude], 15);
+
+  
+            if (noModalFlag !== 'true') {
+                openStoryModal(storyToView);
+            }
+            
         } else {
             console.warn(`Story with ID "${storyId}" not found or has no coordinates.`);
         }
+    }
+}
+
+async function fetchAndDisplayStories() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('stories')
+            .select('*')
+            .eq('is_approved', true); 
+
+        if (error) {
+            throw error;
+        }
+
+        allStories = data; 
+        updateMapFocus(); 
+        checkUrlForStory();
+
+    } catch (error) {
+        console.error('Failed to fetch stories:', error.message);
     }
 }
 
@@ -265,12 +540,48 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    const storyForm = document.getElementById('storyForm');
+     const storyForm = document.getElementById('storyForm');
     if (storyForm) {
         storyForm.addEventListener('submit', handleStorySubmit);
     }
 
-    allStories = [...dummyStories];
+     const commentForm = document.getElementById('comment-form');
+    if (commentForm) {
+        commentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitButton = commentForm.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Submitting...';
+
+            const storyId = document.getElementById('comment-story-id').value;
+            const nickname = document.getElementById('comment-nickname').value;
+            const commentText = document.getElementById('comment-text').value;
+            
+            localStorage.setItem('eerieGridNickname', nickname);
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('comments')
+                    .insert([
+                        { story_id: storyId, nickname: nickname, comment_text: commentText }
+                    ]);
+
+                if (error) throw error;
+                
+                document.getElementById('comment-text').value = '';
+                await fetchAndDisplayComments(storyId); 
+
+            } catch (err) {
+                showNotificationModal('Could not submit comment. The spirits are restless.');
+                console.error('Error submitting comment:', err.message);
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Submit Comment';
+            }
+        });
+    }
+    document.getElementById('nickname').value = localStorage.getItem('eerieGridNickname') || ''; 
+    fetchAndDisplayStories();
     updateMapFocus(); 
     checkUrlForStory(); 
 });

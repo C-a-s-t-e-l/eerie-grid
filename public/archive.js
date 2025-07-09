@@ -33,14 +33,29 @@ document.addEventListener('DOMContentLoaded', () => {
     return formattedDate.replace(' at', ' -').replace(/(AM|PM)/g, (match) => match.toLowerCase());
 }
 
-    function initializeStories() {
-        const chronoSortedStories = [...dummyStories].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-        fullStoryList = chronoSortedStories.map((story, index) => ({
-            ...story,
-            caseFile: index + 1
-        }));
+async function initializeStories() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('stories')
+            .select('*')
+            .eq('is_approved', true)
+            .order('created_at', { ascending: false }); 
+
+        if (error) {
+            throw error;
+        }
+
+        fullStoryList = data; 
         handleSortAndFilter();
+
+    } catch (error) {
+        console.error('Failed to fetch stories for archive:', error.message);
+        const storyListContainer = document.getElementById('story-list-container');
+        if (storyListContainer) {
+            storyListContainer.innerHTML = '<p class="no-results">Failed to load the archive. The spirits are not responding...</p>';
+        }
     }
+}
     
     function renderStories(storiesToRender, page = 1) {
         if (!storyListContainer) return;
@@ -56,33 +71,120 @@ document.addEventListener('DOMContentLoaded', () => {
         const paginatedItems = storiesToRender.slice(startIndex, endIndex);
 
         paginatedItems.forEach(story => {
-            const formattedDate = formatDate(story.createdAt); 
-            const caseTag = `Archive #${String(story.caseFile).padStart(4, '0')} - ${formattedDate}`;
-            
+            const formattedDate = formatDate(story.created_at); 
+const caseTag = `Archive #${String(story.id).padStart(4, '0')} - ${formattedDate}`;
 
-            const storyCard = `
-                <div class="story-card" data-story-id="${story.id}">
-                    <p class="story-card-casetag">${caseTag}</p>
-                    <div class="story-card-content">
-                        <p class="story-card-location"><i class="fas fa-map-pin"></i>${story.locationName}</p>
-                        <h3 class="story-card-title">${story.title}</h3>
-                        <p class="story-card-author">By: ${story.authorNickname || 'Unknown'}</p>
-                        
-                        <p class="story-card-snippet">${story.snippet}</p>
-                       
-                        
-                    </div>
-                    <div class="story-card-actions">
+const storyCard = `
+    <div class="story-card" data-story-id="${story.id}">
+        <p class="story-card-casetag">${caseTag}</p>
+        <div class="story-card-content">
+       
+            <p class="story-card-location"><i class="fas fa-map-pin"></i>${story.location_name}</p>
+            <h3 class="story-card-title">${story.title}</h3>
+          
+            <p class="story-card-author">By: ${story.nickname || 'Unknown'}</p>
+            
+            <p class="story-card-snippet">${story.snippet}</p>
+           
+        </div>
+       <div class="story-card-actions">
                         <button class="eerie-button primary btn-read" data-story-id="${story.id}">
                             <i class="fas fa-book-open"></i> Read Full Story
                         </button>
                     </div>
-                
-                </div>
-            `;
+    </div>
+`;
             storyListContainer.innerHTML += storyCard;
         });
     }
+
+async function fetchAndDisplayComments(storyId) {
+    const commentsContainer = document.getElementById('comments-container');
+    if (!commentsContainer) return;
+
+    commentsContainer.innerHTML = '<p>Loading echoes...</p>';
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('comments')
+            .select('*')
+            .eq('story_id', storyId)
+            .order('created_at', { ascending: true });
+
+        if (error) throw error;
+
+        if (data.length === 0) {
+            commentsContainer.innerHTML = '<p>No echoes yet. Be the first to leave a whisper.</p>';
+        } else {
+            commentsContainer.innerHTML = data.map(comment => {
+                const commentDate = new Date(comment.created_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+                return `
+                    <div class="comment-card">
+                        <p class="comment-text">${escapeHTML(comment.comment_text)}</p>
+                        <p class="comment-meta">By <span class="comment-author">${escapeHTML(comment.nickname)}</span> on <span class="comment-date">${commentDate}</span></p>
+                    </div>
+                `;
+            }).join('');
+        }
+    } catch (err) {
+        commentsContainer.innerHTML = '<p>Could not load the echoes from the beyond.</p>';
+        console.error('Error fetching comments:', err.message);
+    }
+}
+
+function escapeHTML(str) {
+    return str.replace(/[&<>"']/g, function (match) {
+        return {
+            '&': '&',
+            '<': '<',
+            '>': '>',
+            '"': '"',
+            "'": "'"
+        }[match];
+    });
+}
+
+const commentForm = document.getElementById('comment-form');
+if (commentForm) {
+    commentForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitButton = commentForm.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Submitting...';
+
+        const storyId = document.getElementById('comment-story-id').value;
+        const nickname = document.getElementById('comment-nickname').value;
+        const commentText = document.getElementById('comment-text').value;
+        
+        localStorage.setItem('eerieGridNickname', nickname);
+
+        try {
+            const { data, error } = await supabaseClient
+                .from('comments')
+                .insert([
+                    { story_id: storyId, nickname: nickname, comment_text: commentText }
+                ]);
+
+            if (error) throw error;
+            
+            // Clear the form and refresh the comments
+            document.getElementById('comment-text').value = '';
+            fetchAndDisplayComments(storyId);
+
+        } catch (err) {
+            alert('Could not submit comment. The spirits are restless.');
+            console.error('Error submitting comment:', err.message);
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Submit Comment';
+        }
+    });
+}
+
     function setupPagination(items) {
         if (!paginationContainer) return;
         paginationContainer.innerHTML = "";
@@ -172,18 +274,44 @@ document.addEventListener('DOMContentLoaded', () => {
         window.scrollTo(0, 0); 
     }
 
-    function populateModal(storyId) {
-        const storyData = fullStoryList.find(s => s.id == storyId);
-        if (!storyData) return;
 
-        modalTitle.textContent = storyData.title;
-        modalLocation.innerHTML = `<em><i class="fas fa-map-pin"></i> ${storyData.locationName}</em>`;
-        modalAuthor.innerHTML = `<em><i class="fas fa-user-ghost"></i> By: ${storyData.authorNickname || 'Unknown'}</em>`;
-        modalFullStory.innerHTML = `<p>${storyData.fullStory.replace(/\n/g, '</p><p>')}</p>`;
-
-        viewOnGridButton.dataset.storyId = storyData.id;
-        openModal();
+function populateModal(storyId) {
+    const storyData = fullStoryList.find(s => s.id == storyId);
+    
+    const commentStoryIdInput = document.getElementById('comment-story-id');
+    if(commentStoryIdInput) {
+        commentStoryIdInput.value = storyId;
     }
+    const commentNicknameInput = document.getElementById('comment-nickname');
+    if(commentNicknameInput){
+        commentNicknameInput.value = localStorage.getItem('eerieGridNickname') || '';
+    }
+    if (!storyData) return;
+
+    modalTitle.textContent = storyData.title;
+    modalLocation.innerHTML = `<em><i class="fas fa-map-pin"></i> ${storyData.location_name}</em>`;
+    modalAuthor.innerHTML = `<em><i class="fas fa-user-ghost"></i> By: ${storyData.nickname || 'Unknown'}</em>`;
+    viewOnGridButton.dataset.storyId = storyData.id;
+    const cleanStoryText = storyData.full_story.replace(/\\n/g, '\n');
+    const paragraphs = cleanStoryText.split('\n').filter(p => p.trim() !== '');
+    modalFullStory.innerHTML = ''; 
+    paragraphs.forEach(paragraphText => {
+        const p = document.createElement('p');
+        p.textContent = paragraphText;
+        modalFullStory.appendChild(p);
+    });
+    setupReactionSystem(storyId);
+    const reactionButtons = document.querySelectorAll('.reaction-button');
+    reactionButtons.forEach(button => {
+        const newButton = button.cloneNode(true);
+        newButton.addEventListener('click', (event) => handleReactionClick(event, storyId));
+        button.parentNode.replaceChild(newButton, button);
+    });
+
+    fetchAndDisplayComments(storyId);
+    openModal();
+}
+
     
     function openModal() {
         modal.classList.remove('modal-hidden');
@@ -197,33 +325,33 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.style.overflow = '';
     }
 
-    function handleSortAndFilter() {
-        let filteredStories = [...fullStoryList];
-        const searchTerm = searchBar.value.toLowerCase();
-        
-        if (searchTerm) {
-            filteredStories = filteredStories.filter(story => 
-                story.title.toLowerCase().includes(searchTerm) ||
-                (story.authorNickname && story.authorNickname.toLowerCase().includes(searchTerm)) ||
-                story.locationName.toLowerCase().includes(searchTerm) ||
-                story.snippet.toLowerCase().includes(searchTerm)
-            );
-        }
-
-        const sortBy = sortSelect.value;
-        if (sortBy === 'newest') {
-            filteredStories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        } else if (sortBy === 'oldest') {
-            filteredStories.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-        } else if (sortBy === 'title-az') {
-            filteredStories.sort((a, b) => a.title.localeCompare(b.title));
-        }
-        
-        currentFilteredList = filteredStories;
-        currentPage = 1;
-        renderStories(currentFilteredList, currentPage);
-        setupPagination(currentFilteredList);
+   function handleSortAndFilter() {
+    let filteredStories = [...fullStoryList];
+    const searchTerm = searchBar.value.toLowerCase();
+    
+    if (searchTerm) {
+        filteredStories = filteredStories.filter(story => 
+            story.title.toLowerCase().includes(searchTerm) ||
+            (story.nickname && story.nickname.toLowerCase().includes(searchTerm)) ||
+            story.location_name.toLowerCase().includes(searchTerm) ||
+            story.snippet.toLowerCase().includes(searchTerm)
+        );
     }
+
+    const sortBy = sortSelect.value;
+    if (sortBy === 'newest') {
+        filteredStories.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    } else if (sortBy === 'oldest') {
+        filteredStories.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    } else if (sortBy === 'title-az') {
+        filteredStories.sort((a, b) => a.title.localeCompare(b.title));
+    }
+    
+    currentFilteredList = filteredStories;
+    currentPage = 1;
+    renderStories(currentFilteredList, currentPage);
+    setupPagination(currentFilteredList);
+}
 
     if (storyListContainer) {
         storyListContainer.addEventListener('click', (e) => {
@@ -235,11 +363,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (viewOnGridButton) {
-        viewOnGridButton.addEventListener('click', (e) => {
-            const storyId = e.currentTarget.dataset.storyId;
-            window.location.href = `map.html?story=${storyId}`;
-        });
-    }
+    viewOnGridButton.addEventListener('click', (e) => {
+        const storyId = e.currentTarget.dataset.storyId;
+        window.location.href = `map.html?story=${storyId}&no_modal=true`;
+    });
+}
 
     if (closeButtonTop && closeButtonBottom && modal) {
         [closeButtonTop, closeButtonBottom].forEach(btn => btn.addEventListener('click', closeModal));
@@ -252,6 +380,110 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    function getOrCreateUserId() {
+    let userId = localStorage.getItem('eerieGridUserId');
+    if (!userId) {
+        userId = self.crypto.randomUUID();
+        localStorage.setItem('eerieGridUserId', userId);
+    }
+    return userId;
+}
+
+function displayReactionCounts(counts) {
+    const displayContainer = document.getElementById('reaction-display');
+    if (!displayContainer) return;
+
+    const emojiMap = {
+        spooked: '😱',
+        intriguing: '🤔',
+        tragic: '😥',
+        believable: '🧐',
+        absurd: '😂'
+    };
+
+    if (!counts || counts.length === 0) {
+        displayContainer.innerHTML = '';
+        return;
+    }
+
+    displayContainer.innerHTML = counts.map(item =>
+        `<span class="reaction-count">${emojiMap[item.reaction_type] || '?'} ${item.reaction_count}</span>`
+    ).join('');
+}
+
+function updateReactionButtons(userReaction) {
+    const buttons = document.querySelectorAll('.reaction-button');
+    buttons.forEach(button => {
+        if (button.dataset.reaction === userReaction) {
+            button.classList.add('selected');
+        } else {
+            button.classList.remove('selected');
+        }
+    });
+}
+
+async function setupReactionSystem(storyId) {
+    const userId = getOrCreateUserId();
+    
+    try {
+        const [countsResult, userReactionResult] = await Promise.all([
+            supabaseClient.rpc('get_reaction_counts', { story_id_to_check: storyId }),
+            supabaseClient.from('reactions').select('reaction_type').eq('story_id', storyId).eq('user_id', userId).maybeSingle()
+        ]);
+
+        if (countsResult.error) throw countsResult.error;
+        if (userReactionResult.error) throw userReactionResult.error;
+
+        displayReactionCounts(countsResult.data);
+        
+        const userReaction = userReactionResult.data ? userReactionResult.data.reaction_type : null;
+        updateReactionButtons(userReaction);
+
+    } catch (err) {
+        console.error("Error setting up reactions:", err.message);
+        const displayContainer = document.getElementById('reaction-display');
+        if (displayContainer) displayContainer.innerHTML = '<span class="reaction-count">?</span>';
+    }
+}
+
+async function handleReactionClick(event, storyId) {
+    const button = event.currentTarget;
+    const reactionType = button.dataset.reaction;
+    const userId = getOrCreateUserId();
+
+    const isAlreadySelected = button.classList.contains('selected');
+
+    if (isAlreadySelected) {
+        try {
+            const { error } = await supabaseClient
+                .from('reactions')
+                .delete()
+                .eq('story_id', storyId)
+                .eq('user_id', userId);
+            
+            if (error) throw error;
+            await setupReactionSystem(storyId);
+        } catch (err) {
+            console.error("Error deleting reaction:", err.message);
+        }
+    } else {
+        try {
+            const { error } = await supabaseClient
+                .from('reactions')
+                .upsert({
+                    story_id: storyId,
+                    user_id: userId,
+                    reaction_type: reactionType
+                }, { onConflict: 'story_id, user_id' }); 
+
+            if (error) throw error;
+            await setupReactionSystem(storyId);
+        } catch (err) {
+            console.error("Error upserting reaction:", err.message);
+        }
+    }
+}
+
     
     if (searchBar) searchBar.addEventListener('input', handleSortAndFilter);
     if (sortSelect) sortSelect.addEventListener('change', handleSortAndFilter);
