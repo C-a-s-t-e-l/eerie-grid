@@ -1,4 +1,3 @@
-// Global variables
 let map;
 let currentMarker; 
 let allStories = [];
@@ -335,7 +334,6 @@ function displayMarkers(storiesToDisplay) {
     storyMarkers = {}; 
 
    storiesToDisplay.forEach(story => {
-    // Change to latitude and longitude
     if (story.latitude && story.longitude) {
         const marker = L.marker([story.latitude, story.longitude], { icon: creepyIcon }).addTo(map);
         storyMarkers[story.id] = marker; 

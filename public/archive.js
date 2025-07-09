@@ -171,7 +171,6 @@ if (commentForm) {
 
             if (error) throw error;
             
-            // Clear the form and refresh the comments
             document.getElementById('comment-text').value = '';
             fetchAndDisplayComments(storyId);
 
